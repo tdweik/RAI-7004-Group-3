@@ -138,7 +138,7 @@ _Below is an example of how you can instruct your audience on installing and set
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/tdweik/RAI-7004-Group-3
    ```
 2. 
 
@@ -170,13 +170,9 @@ Call python AutML.py $"C:\data\StockPrice/.csv" $target="StockPrice"  Classifica
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
+- [x] Add more Machine Learning Models
+- [x] Hyper Paramter Tunning
+- [ ] Adding supportive plots
 
 See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
 
