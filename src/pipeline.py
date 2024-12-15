@@ -81,17 +81,20 @@ class ML_Pipeline:
         self.preprocess_data()
         
         # Identify categorical and numerical columns
-        categorical_features = self.X.select_dtypes(include=['object', 'category']).columns
-        numerical_features = self.X.select_dtypes(include=['int64', 'float64']).columns
+        categorical_features = self.X.select_dtypes(
+            include=['object', 'category']
+        ).columns
+        numerical_features = self.X.select_dtypes(
+            include=['int64', 'float64']
+        ).columns
 
         # Create the column transformer with OneHotEncoder and MinMaxScaler
         preprocessor = ColumnTransformer(
             transformers=[
                 ('num', MinMaxScaler(), numerical_features),
-                ('cat', OneHotEncoder(), categorical_features)
+                ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
             ]
         )
-        
         self.model = SklearnAlgorithm(self.algorithm)
         
         self.pipeline = Pipeline(steps=[('model', self.model)])
