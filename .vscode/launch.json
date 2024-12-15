@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug cli.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/cli.py",
+            "args": [
+                "sample_binary_classification.csv",
+                "target",
+                "logistic_regression"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

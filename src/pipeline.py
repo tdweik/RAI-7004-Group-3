@@ -1,5 +1,25 @@
+import sys
+sys.path.append('src')
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from algorithms.sklearn_algorithms import SklearnAlgorithm
+from sklearn.metrics import mean_absolute_error
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from sklearn.metrics import classification_report
+import joblib
+import uuid
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+
 class ML_Pipeline:
-    def __init__(self, csv_file: str, target_column: str, algorithm: str, random_state: int = 42, num_folds: int = 5):
+    def __init__(self, csv_file: str, target_column: str, algorithm: str, 
+                 random_state: int = 42, num_folds: int = 5):
         """
         Initializes the ML_Pipeline with the provided parameters.
 
@@ -16,6 +36,7 @@ class ML_Pipeline:
         self.num_folds = num_folds
         self.pipeline = None
         self.model = None
+        self.unique_id = uuid.uuid4()
 
     def load_data(self):
         """
@@ -28,54 +49,97 @@ class ML_Pipeline:
         """
         Preprocesses the data by separating features and target variable.
         """
-        X = self.data.drop(columns=[self.target_column])
-        y = self.data[self.target_column]
-        return X, y
+        self.load_data()
+        
+        self.data = self.data.drop_duplicates()
 
+        # Handle missing values (example: fill with mean for numeric columns)
+        for column in self.data.select_dtypes(include=['number']).columns:
+            self.data[column] = self.data[column].fillna(self.data[column].mean())
+
+        # Handle missing values (example: fill with mode for categorical columns)
+        for column in self.data.select_dtypes(include=['object']).columns:
+            self.data[column] = self.data[column].fillna(self.data[column].mode()[0])
+            
+        self.X = self.data.drop(columns=[self.target_column])
+        self.y = self.data[self.target_column]
+        
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X, self.y, test_size=0.2, random_state=self.random_state
+        )
+        
     def create_pipeline(self):
         """
         Creates a machine learning pipeline based on the specified algorithm.
         """
-        from sklearn.pipeline import Pipeline
-        from sklearn.model_selection import train_test_split
-        from sklearn.model_selection import cross_val_score
-        from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
-        from algorithms.classification import ClassificationAlgorithms
-        from algorithms.regression import RegressionAlgorithms
+        self.preprocess_data()
+        
+        # Identify categorical and numerical columns
+        categorical_features = self.X.select_dtypes(include=['object', 'category']).columns
+        numerical_features = self.X.select_dtypes(include=['int64', 'float64']).columns
 
-        X, y = self.preprocess_data()
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=self.random_state)
-
-        if self.algorithm in ['Logistic Regression', 'Decision Tree', 'Random Forest']:
-            self.model = ClassificationAlgorithms(self.algorithm)
-        elif self.algorithm in ['Linear Regression', 'Decision Tree Regressor', 'Random Forest Regressor']:
-            self.model = RegressionAlgorithms(self.algorithm)
-        else:
-            raise ValueError("Unsupported algorithm specified.")
-
+        # Create the column transformer with OneHotEncoder and MinMaxScaler
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', MinMaxScaler(), numerical_features),
+                ('cat', OneHotEncoder(), categorical_features)
+            ]
+        )
+        
+        self.model = SklearnAlgorithm(self.algorithm)
+        
         self.pipeline = Pipeline(steps=[('model', self.model)])
 
+        # Update the pipeline to include the preprocessor
+        self.pipeline = Pipeline(steps=[
+            ('preprocessor', preprocessor),
+            ('model', self.model)
+        ])
+
         # Fit the model
-        self.pipeline.fit(X_train, y_train)
+        self.pipeline.fit(self.X_train, self.y_train)
+
+    def evaluate(self):
+        """
+        Evaluates the model using cross-validation and returns the performance metrics.
+        """
 
         # Cross-validated performance metrics
-        scores = cross_val_score(self.pipeline, X, y, cv=self.num_folds)
-        return scores.mean()
+        scores = cross_val_score(
+            self.pipeline, self.X, self.y, cv=self.num_folds
+        )
+        print(f"Cross-validated scores: {scores}")
+        print(f"Mean cross-validated score: {scores.mean()}")
 
-    def save_model(self, filename: str):
+        # Evaluate on test set
+        y_pred = self.pipeline.predict(self.X_test)
+        accuracy = round(accuracy_score(self.y_test, y_pred), 2)
+        mae = round(mean_absolute_error(self.y_test, y_pred), 2)
+        mse = round(mean_squared_error(self.y_test, y_pred), 2)
+
+        print(f"Accuracy on test set: {accuracy}")
+        print(f"Mean Absolute Error on test set: {mae}")
+        print(f"Mean Squared Error on test set: {mse}")
+
+        # Generate classification report
+        class_report = classification_report(self.y_test, y_pred)
+        print(f"Classification Report:\n{class_report}")
+
+        # Export results to a text file
+        with open(f"model_evaluation_{self.unique_id}.txt", "w") as f:
+            f.write(f"Cross-validated scores: {scores}\n")
+            f.write(f"Mean cross-validated score: {scores.mean()}\n")
+            f.write(f"Accuracy on test set: {accuracy}\n")
+            f.write(f"Mean Absolute Error on test set: {mae}\n")
+            f.write(f"Mean Squared Error on test set: {mse}\n")
+            f.write(f"Classification Report:\n{class_report}\n")
+        return
+
+    def save_model(self):
         """
         Saves the trained model as a .pkl file.
-
-        :param filename: The name of the file to save the model.
         """
-        import joblib
-        joblib.dump(self.pipeline, filename)
-
-    def run(self):
-        """
-        Executes the ML pipeline: loads data, creates the pipeline, and saves the model.
-        """
-        self.load_data()
-        score = self.create_pipeline()
-        self.save_model('trained_model.pkl')
-        return score
+        # Generate a common UUID for the evaluation and model files
+        
+        filename = f"{self.algorithm}_{self.unique_id}"
+        joblib.dump(self.pipeline, f"{filename}.pkl")

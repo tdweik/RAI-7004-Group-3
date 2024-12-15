@@ -24,7 +24,7 @@ pip install -r requirements.txt
 You can run the CLI application using the following command:
 
 ```
-python -m src.cli --csv <path_to_csv> --target <target_column> --algorithm <algorithm_name> [--random_state <value>] [--num_folds <value>]
+python -m src.cli <path_to_csv> <target_column> <algorithm_name> [--random_state <value>] [--num_folds <value>]
 ```
 
 **Parameters:**
