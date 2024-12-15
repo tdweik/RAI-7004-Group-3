@@ -52,31 +52,31 @@ pipeline.run()
 
 ```
 .github/
-    workflows/
-        ci.yml
+├── workflows/
+│   └── ci.yml
 .gitignore
 .vscode/
-    launch.json
+├── launch.json
 output/
-    models/
-        random_forest_classifier_62dae211-f92b-4942-8077-a0242b703a6f.pkl
+├── models/
+│   └── 
+src/
+├── __init__.py
+├── algorithms/
+│   ├── __init__.py
+│   └── ...
+├── cli.py
+└── pipeline.py
+tests/
+├── __init__.py
+├── test_algorithms.py
+├── test_cli.py
+└── test_pipeline_classification.py
 README.md
 requirements.txt
 sample_binary_classification.csv
 sample_house_prices.csv
 setup.py
-src/
-    __init__.py
-    algorithms/
-        __init__.py
-        ...
-    cli.py
-    pipeline.py
-tests/
-    __init__.py
-    test_algorithms.py
-    test_cli.py
-    test_pipeline_classification.py
 ```
 
 ## Testing
