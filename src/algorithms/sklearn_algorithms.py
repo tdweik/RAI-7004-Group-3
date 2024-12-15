@@ -13,13 +13,13 @@ class SklearnAlgorithm:
 
         if self.algorithm_name == 'logistic_regression':
             self.model = LogisticRegression()
-        elif self.algorithm_name == 'decision_tree':
+        elif self.algorithm_name == 'decision_tree_classifier':
             self.model = DecisionTreeClassifier()
-        elif self.algorithm_name == 'random_forest':
+        elif self.algorithm_name == 'random_forest_classifier':
             self.model = RandomForestClassifier()
         elif self.algorithm_name == 'linear_regression':
             self.model = LinearRegression()
-        elif self.algorithm_name == 'decision_tree':
+        elif self.algorithm_name == 'decision_tree_regressor':
             self.model = DecisionTreeRegressor()
         elif self.algorithm_name == 'random_forest_regressor':
             self.model = RandomForestRegressor()

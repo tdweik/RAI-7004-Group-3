@@ -8,8 +8,8 @@ from src.pipeline import ML_Pipeline
 @click.argument('target_column', type=str)
 @click.argument('algorithm', type=click.Choice([
     'logistic_regression',
-    'decision_tree',
-    'random_forest',
+    'decision_tree_classifier',
+    'random_forest_classifier',
     'linear_regression',
     'decision_tree_regressor',
     'random_forest_regressor'
