@@ -1,4 +1,4 @@
-# Machine Learning Pipeline CLI
+*# Machine Learning Pipeline CLI
 
 This project provides a command-line interface (CLI) application for experimenting with and developing machine learning pipelines using scikit-learn. It allows users to easily train models on datasets and evaluate their performance.
 
@@ -62,4 +62,4 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the MIT License. See the LICENSE file for more details.*
