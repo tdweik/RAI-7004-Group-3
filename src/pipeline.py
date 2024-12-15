@@ -49,6 +49,8 @@ class ML_Pipeline:
         Loads the dataset from the CSV file.
         """
 
+        if not os.path.exists(self.csv_file):
+            raise FileNotFoundError(f"The file {self.csv_file} does not exist.")
         self.data = pd.read_csv(self.csv_file)
 
     def preprocess_data(self):

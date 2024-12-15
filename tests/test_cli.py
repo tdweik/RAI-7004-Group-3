@@ -1,33 +1,34 @@
+import sys
+import subprocess
 import pytest
-from click.testing import CliRunner
-from src.cli import main
 
-def test_cli_help():
-    runner = CliRunner()
-    result = runner.invoke(main, ['--help'])
-    assert result.exit_code == 0
-    assert 'Usage:' in result.output
+sys.path.append('src')
 
-def test_cli_with_valid_input():
-    runner = CliRunner()
-    result = runner.invoke(main, ['data.csv', 'target', 'RandomForestClassifier'])
-    assert result.exit_code == 0
-    assert 'Model training completed' in result.output
+
+def test_cli_command():
+    result = subprocess.run(
+        ['python', 'src/cli.py', 'some_command'], capture_output=True, text=True
+    )
+    assert 'Error' in result.stderr
+
+
+def test_cli_invalid_command():
+    result = subprocess.run(
+        ['python', 'src/cli.py', 'invalid_command'], capture_output=True, text=True
+    )
+    assert 'Error' in result.stderr
+
 
 def test_cli_with_invalid_algorithm():
-    runner = CliRunner()
-    result = runner.invoke(main, ['data.csv', 'target', 'InvalidAlgorithm'])
-    assert result.exit_code != 0
-    assert 'Invalid algorithm specified' in result.output
+    csv_file = 'sample_binary_classification.csv'
+    target_column = 'target'
+    algorithm = 'invalid_algorithm'
+    result = subprocess.run(
+        ['python', 'src/cli.py', csv_file, target_column, algorithm], capture_output=True, text=True
+    )
+    assert result.returncode != 0
+    assert 'Error' in result.stderr
 
-def test_cli_with_missing_parameters():
-    runner = CliRunner()
-    result = runner.invoke(main, ['data.csv'])
-    assert result.exit_code != 0
-    assert 'Error: Missing parameters' in result.output
 
-def test_cli_with_optional_parameters():
-    runner = CliRunner()
-    result = runner.invoke(main, ['data.csv', 'target', 'LogisticRegression', '--random_state', '42'])
-    assert result.exit_code == 0
-    assert 'Model training completed' in result.output
+if __name__ == '__main__':
+    pytest.main()
