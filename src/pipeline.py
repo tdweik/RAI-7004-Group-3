@@ -157,7 +157,7 @@ class ML_Pipeline:
         """
         # Generate a common UUID for the evaluation and model files
        
-        filename = f"{self.algorithm}_{self.unique_id}"
+        filename = f"{self.output_dir}/{self.algorithm}_{self.unique_id}"
         joblib.dump(self.pipeline, f"{filename}.pkl")
         
     def run(self):
