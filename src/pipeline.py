@@ -11,6 +11,8 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.metrics import classification_report
+import pandas as pd
+import os
 import joblib
 import uuid
 import warnings
@@ -37,12 +39,16 @@ class ML_Pipeline:
         self.pipeline = None
         self.model = None
         self.unique_id = uuid.uuid4()
+        
+        # Create the output models directory if it doesn't exist
+        self.output_dir = os.path.join(os.getcwd(), 'output', 'models')
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def load_data(self):
         """
         Loads the dataset from the CSV file.
         """
-        import pandas as pd
+
         self.data = pd.read_csv(self.csv_file)
 
     def preprocess_data(self):
@@ -113,26 +119,36 @@ class ML_Pipeline:
 
         # Evaluate on test set
         y_pred = self.pipeline.predict(self.X_test)
-        accuracy = round(accuracy_score(self.y_test, y_pred), 2)
-        mae = round(mean_absolute_error(self.y_test, y_pred), 2)
-        mse = round(mean_squared_error(self.y_test, y_pred), 2)
 
-        print(f"Accuracy on test set: {accuracy}")
-        print(f"Mean Absolute Error on test set: {mae}")
-        print(f"Mean Squared Error on test set: {mse}")
+        if self.algorithm in ['logistic_regression', 'random_forest']:
+            # Classification metrics
+            accuracy = round(accuracy_score(self.y_test, y_pred), 2)
+            print(f"Accuracy on test set: {accuracy}")
 
-        # Generate classification report
-        class_report = classification_report(self.y_test, y_pred)
-        print(f"Classification Report:\n{class_report}")
+            # Generate classification report
+            class_report = classification_report(self.y_test, y_pred)
+            print(f"Classification Report:\n{class_report}")
 
-        # Export results to a text file
-        with open(f"model_evaluation_{self.unique_id}.txt", "w") as f:
-            f.write(f"Cross-validated scores: {scores}\n")
-            f.write(f"Mean cross-validated score: {scores.mean()}\n")
-            f.write(f"Accuracy on test set: {accuracy}\n")
-            f.write(f"Mean Absolute Error on test set: {mae}\n")
-            f.write(f"Mean Squared Error on test set: {mse}\n")
-            f.write(f"Classification Report:\n{class_report}\n")
+            # Export results to a text file
+            with open(f"{self.output_dir}/{self.algorithm}_{self.unique_id}_evaluation.txt", "w") as f:
+                f.write(f"Cross-validated scores: {scores}\n")
+                f.write(f"Mean cross-validated score: {scores.mean()}\n")
+                f.write(f"Accuracy on test set: {accuracy}\n")
+                f.write(f"Classification Report:\n{class_report}\n")
+
+        elif self.algorithm in ['linear_regression', 'random_forest_regression']:
+            # Regression metrics
+            mae = round(mean_absolute_error(self.y_test, y_pred), 2)
+            mse = round(mean_squared_error(self.y_test, y_pred), 2)
+            print(f"Mean Absolute Error on test set: {mae}")
+            print(f"Mean Squared Error on test set: {mse}")
+
+            # Export results to a text file
+            with open(f"{self.output_dir}/{self.algorithm}_{self.unique_id}_evaluation.txt", "w") as f:
+                f.write(f"Cross-validated scores: {scores}\n")
+                f.write(f"Mean cross-validated score: {scores.mean()}\n")
+                f.write(f"Mean Absolute Error on test set: {mae}\n")
+                f.write(f"Mean Squared Error on test set: {mse}\n")
         return
 
     def save_model(self):
@@ -140,6 +156,14 @@ class ML_Pipeline:
         Saves the trained model as a .pkl file.
         """
         # Generate a common UUID for the evaluation and model files
-        
+       
         filename = f"{self.algorithm}_{self.unique_id}"
         joblib.dump(self.pipeline, f"{filename}.pkl")
+        
+    def run(self):
+        """
+        Runs the ML pipeline by creating the pipeline, evaluating the model, and saving it.
+        """
+        self.create_pipeline()
+        self.evaluate()
+        self.save_model()
